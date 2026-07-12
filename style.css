@@ -1,7 +1,210 @@
-html, body {
+/* 基础设置 */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
   margin: 0;
   padding: 0;
+  min-height: 100%;
 }
-canvas {
+
+body {
+  min-height: 100vh;
+  padding: clamp(28px, 5vw, 72px);
+
+  display: grid;
+  grid-template-columns: minmax(360px, 620px) minmax(280px, 430px);
+  justify-content: center;
+  align-items: center;
+  gap: clamp(50px, 8vw, 130px);
+
+  background: #faf9f6;
+  color: #242321;
+
+  font-family:
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Noto Sans SC",
+    Arial,
+    sans-serif;
+}
+
+/* 左侧互动插画区域 */
+#canvas-container {
+  width: min(46vw, 620px);
+  max-height: 86vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+/* 控制互动尺寸，不让它铺满网页 */
+#canvas-container canvas {
   display: block;
+
+  width: auto !important;
+  height: auto !important;
+
+  max-width: 100% !important;
+  max-height: 86vh !important;
+
+  border-radius: 2px;
+}
+
+/* 右侧介绍文字 */
+.site-intro {
+  position: relative;
+  z-index: 10;
+
+  width: 100%;
+  max-width: 430px;
+
+  padding-bottom: 5vh;
+}
+
+/* 英文小标题 */
+.site-label {
+  margin: 0 0 22px;
+
+  color: #8d867d;
+
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.2em;
+}
+
+/* 中文主标题 */
+.site-intro h1 {
+  margin: 0 0 25px;
+
+  max-width: 420px;
+
+  color: #1f1e1c;
+
+  font-size: clamp(34px, 4vw, 58px);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+}
+
+/* 简介 */
+.site-description {
+  margin: 0;
+
+  max-width: 360px;
+
+  color: #777168;
+
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.9;
+}
+
+/* 导航入口 */
+.site-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  margin-top: 38px;
+}
+
+.site-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 44px;
+  padding: 0 21px;
+
+  color: #2d2b27;
+  background: transparent;
+
+  border: 1px solid #b9b2a8;
+  border-radius: 999px;
+
+  font-size: 14px;
+  text-decoration: none;
+
+  transition:
+    transform 180ms ease,
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.site-links a:hover {
+  color: #ffffff;
+  background: #292723;
+  border-color: #292723;
+  transform: translateY(-2px);
+}
+
+/* 平板与窄屏 */
+@media (max-width: 900px) {
+  body {
+    grid-template-columns: minmax(300px, 520px) minmax(240px, 330px);
+    gap: 45px;
+    padding: 32px;
+  }
+
+  #canvas-container {
+    width: 48vw;
+  }
+
+  .site-intro h1 {
+    font-size: 36px;
+  }
+}
+
+/* 手机：改为上下结构 */
+@media (max-width: 680px) {
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    gap: 36px;
+    padding: 24px 20px 48px;
+  }
+
+  #canvas-container {
+    width: min(100%, 470px);
+    max-height: none;
+  }
+
+  #canvas-container canvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .site-intro {
+    max-width: 470px;
+    padding: 0;
+  }
+
+  .site-label {
+    margin-bottom: 14px;
+  }
+
+  .site-intro h1 {
+    margin-bottom: 18px;
+    font-size: 32px;
+  }
+
+  .site-description {
+    font-size: 14px;
+  }
+
+  .site-links {
+    margin-top: 26px;
+  }
 }
