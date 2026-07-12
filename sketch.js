@@ -21,7 +21,8 @@ const RIGHT_ANCHOR = { x: 350, y: 414 };
 const ROPE_LENGTH = 690;
 
 function setup() {
-  createCanvas(1000, 1250);
+  const canvas = createCanvas(1000, 1250);
+  canvas.parent("canvas-container");
   pixelDensity(2);
   strokeCap(ROUND);
   strokeJoin(ROUND);
