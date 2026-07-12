@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="关于选择性完美、行动连续性与心理效能的图文长页。">
+  <title>不是每件事，都值得 100 分</title>
+  <style>
+    :root {
+      --paper: #ffffff;
+      --ink: #17253a;
+      --muted: #647184;
+      --blue: #285fb8;
+      --blue-soft: #eef4ff;
+      --orange: #edae36;
+      --red: #d5533f;
+      --line: #dce3ec;
+      --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", SimSun, serif;
+      --sans: "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+      --gutter: clamp(22px, 5vw, 72px);
+      --content: 1160px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--paper);
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: var(--sans);
+      font-size: 18px;
+      line-height: 1.85;
+      text-rendering: optimizeLegibility;
+    }
+
+    img { display: block; max-width: 100%; }
+
+    .progress-track {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 4px;
+      z-index: 20;
+      background: rgba(40, 95, 184, 0.08);
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--orange));
+      transform-origin: left;
+    }
+
+    .site-header {
+      position: absolute;
+      inset: 0 0 auto 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 26px var(--gutter);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+
+    .site-name { font-weight: 700; color: var(--blue); }
+    .site-note { color: var(--muted); }
+
+    .hero {
+      min-height: 100svh;
+      display: grid;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 130px var(--gutter) 90px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero::after {
+      content: "100";
+      position: absolute;
+      right: -0.06em;
+      bottom: -0.33em;
+      z-index: 0;
+      color: transparent;
+      -webkit-text-stroke: 2px rgba(40, 95, 184, 0.10);
+      font-family: Georgia, serif;
+      font-size: clamp(250px, 42vw, 700px);
+      font-weight: 700;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      width: min(100%, var(--content));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.6fr);
+      gap: clamp(42px, 8vw, 130px);
+      align-items: end;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 0;
+      max-width: 820px;
+      font-family: var(--serif);
+      font-size: clamp(58px, 7.2vw, 106px);
+      font-weight: 700;
+      letter-spacing: -0.055em;
+      line-height: 1.04;
+    }
+
+    h1 span { color: var(--blue); white-space: nowrap; }
+
+    .hero-side {
+      padding-bottom: 12px;
+      border-top: 3px solid var(--orange);
+      padding-top: 20px;
+    }
+
+    .hero-side p {
+      margin: 0 0 26px;
+      color: #3f4d61;
+      font-family: var(--serif);
+      font-size: clamp(17px, 1.5vw, 21px);
+      line-height: 1.75;
+    }
+
+    .scroll-cue {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-decoration: none;
+    }
+
+    .scroll-cue::after {
+      content: "↓";
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--blue);
+      border-radius: 50%;
+    }
+
+    main { overflow: hidden; }
+
+    .section {
+      width: min(100%, var(--content));
+      margin: 0 auto;
+      padding: clamp(110px, 14vw, 200px) var(--gutter);
+    }
+
+    .section-number {
+      display: block;
+      margin-bottom: 28px;
+      color: var(--orange);
+      font-family: Georgia, serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+    }
+
+    h2 {
+      max-width: 860px;
+      margin-bottom: 34px;
+      font-family: var(--serif);
+      font-size: clamp(38px, 5.2vw, 76px);
+      line-height: 1.18;
+      letter-spacing: -0.04em;
+    }
+
+    h2 em {
+      color: var(--blue);
+      font-style: normal;
+    }
+
+    .lead {
+      max-width: 760px;
+      color: #3e4b5e;
+      font-family: var(--serif);
+      font-size: clamp(20px, 2vw, 28px);
+      line-height: 1.8;
+    }
+
+    .copy {
+      max-width: 720px;
+      color: #445165;
+      font-size: clamp(17px, 1.4vw, 20px);
+    }
+
+    .figure {
+      margin: clamp(56px, 8vw, 100px) 0 0;
+    }
+
+    .figure img {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      background: var(--paper);
+    }
+
+    .figure figcaption {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+    }
+
+    .trap-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+      gap: clamp(46px, 8vw, 120px);
+      align-items: center;
+    }
+
+    .trap-layout .figure { margin: 0; }
+
+    .score-rail {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 44px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+
+    .score {
+      min-height: 152px;
+      padding: 24px;
+      background: var(--paper);
+    }
+
+    .score strong {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--blue);
+      font-family: Georgia, serif;
+      font-size: 46px;
+      line-height: 1;
+    }
+
+    .score:last-child strong { color: var(--orange); }
+    .score span { color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+    .quote-band {
+      width: 100%;
+      padding: clamp(100px, 13vw, 180px) var(--gutter);
+      color: white;
+      background: var(--blue);
+    }
+
+    blockquote {
+      width: min(100%, 1120px);
+      margin: 0 auto;
+      font-family: var(--serif);
+      font-size: clamp(38px, 6vw, 84px);
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.035em;
+    }
+
+    blockquote span { color: #ffd36f; }
+
+    .balance-intro {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(42px, 8vw, 120px);
+      align-items: end;
+    }
+
+    .balance-intro .copy { margin: 0; }
+
+    .decision-line {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 22px;
+      align-items: center;
+      margin-top: 62px;
+      color: var(--blue);
+      font-family: var(--serif);
+      font-size: clamp(22px, 2.7vw, 38px);
+      font-weight: 700;
+    }
+
+    .decision-line::before,
+    .decision-line::after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+    }
+
+    .finale {
+      padding: clamp(110px, 17vw, 240px) var(--gutter);
+      text-align: center;
+      border-top: 1px solid var(--line);
+    }
+
+    .finale p {
+      max-width: 980px;
+      margin: 0 auto;
+      font-family: var(--serif);
+      font-size: clamp(48px, 7.5vw, 112px);
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      line-height: 1.16;
+    }
+
+    .finale p span {
+      position: relative;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    .finale p span::after {
+      content: "";
+      position: absolute;
+      left: -1%;
+      right: -1%;
+      bottom: 0.03em;
+      height: 0.1em;
+      z-index: -1;
+      background: var(--orange);
+      transform: rotate(-1deg);
+      opacity: 0.65;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 28px var(--gutter) 34px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 700ms ease, transform 700ms cubic-bezier(.2,.65,.25,1);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--orange);
+      outline-offset: 5px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-inner,
+      .trap-layout,
+      .balance-intro {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-inner { align-items: start; }
+      .hero-side { max-width: 520px; }
+      .trap-layout .figure { order: 2; }
+      .section { padding-left: var(--gutter); padding-right: var(--gutter); }
+    }
+
+    @media (max-width: 720px) {
+      body { font-size: 16px; line-height: 1.78; }
+      .site-header { padding-top: 20px; }
+      .site-note { display: none; }
+      .hero { min-height: auto; padding-top: 128px; padding-bottom: 96px; }
+      .hero::after { right: -0.18em; bottom: -0.18em; }
+      h1 { font-size: clamp(48px, 14vw, 64px); }
+      .hero-side { margin-top: 16px; }
+      .section { padding-top: 100px; padding-bottom: 100px; }
+      .figure { margin-top: 52px; }
+      .figure figcaption { flex-direction: column; gap: 2px; }
+      .score-rail { grid-template-columns: 1fr; }
+      .score { min-height: auto; }
+      .decision-line { grid-template-columns: 1fr; text-align: center; }
+      .decision-line::before,
+      .decision-line::after { width: 70%; margin: 0 auto; }
+      .footer { flex-direction: column; gap: 4px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-track" role="progressbar" aria-label="阅读进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="progress-bar"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="site-name">60–70 分主义</div>
+    <div class="site-note">选择性完美 · 动态平衡</div>
+  </header>
+
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <h1>不是每件事，<br>都值得 <span>100 分</span></h1>
+      <div class="hero-side">
+        <p>把所有事情都做到极致，往往换不来更好的生活，只会先透支行动所需的心力。</p>
+        <a class="scroll-cue" href="#trap">向下阅读</a>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section class="section" id="trap">
+      <div class="trap-layout">
+        <div class="reveal">
+          <span class="section-number">01 / 边际收益</span>
+          <h2>从 70 到 100，<br>可能只多<em>一点点</em></h2>
+          <p class="copy">生活中的很多事，都不值得投入 100 分去做。最后那一点精致，边际收益往往很低，却会消耗一个人的大部分心力。</p>
+          <div class="score-rail" aria-label="投入与收益对比">
+            <div class="score"><strong>30</strong><span>先让事情开始</span></div>
+            <div class="score"><strong>70</strong><span>已经足够好用</span></div>
+            <div class="score"><strong>100</strong><span>成本陡然升高</span></div>
+          </div>
+        </div>
+        <figure class="figure reveal">
+          <img src="assets/01-100-point-trap.png" alt="人物转动一百分曲柄，心力电池快速耗尽，而结果只从七十分提高一点">
+          <figcaption><span>100 分陷阱</span><span>低收益 · 高消耗</span></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <div class="quote-band">
+      <blockquote class="reveal">完美主义不总是勤奋，<br>它也可能是<span>拖延的燃料</span>。</blockquote>
+    </div>
+
+    <section class="section" id="creator">
+      <span class="section-number reveal">02 / 拖更现场</span>
+      <h2 class="reveal">内容已经够好，<br>发布却被小事<em>层层卡住</em></h2>
+      <p class="lead reveal">有人做 UP 主，内容其实不错，却在剪辑、特效、封面和 BGM 上投入不亚于文本撰写和录制的时间。标准越满，发布越远。</p>
+      <figure class="figure reveal">
+        <img src="assets/02-creator-delay.png" alt="人物把完成的视频推向发布门，却被封面、背景音乐和特效缠住">
+        <figcaption><span>真正的瓶颈，不一定在内容</span><span>封面 · BGM · 特效 · 拖更</span></figcaption>
+      </figure>
+    </section>
+
+    <section class="section" id="continuity">
+      <span class="section-number reveal">03 / 行动连续性</span>
+      <h2 class="reveal">不要等一次彻底，<br>先保住<em>下一次行动</em></h2>
+      <p class="lead reveal">有的人要么不打扫，要么恨不得清除每一粒灰尘。这样的两极化会破坏行动的连续性。哪怕只是顺手做到 30 分，连续几天后也能接近 80、90 分。</p>
+      <figure class="figure reveal">
+        <img src="assets/03-continuity.png" alt="人物和猫沿着三十、五十、七十、九十分的踏石持续前进，旁边的放大镜困在一粒灰尘上">
+        <figcaption><span>连续的小动作，会自己累积</span><span>30 → 50 → 70 → 90</span></figcaption>
+      </figure>
+    </section>
+
+    <div class="quote-band">
+      <blockquote class="reveal">你真正需要保护的，<br>不是一次满分，<br>而是<span>明天还愿意继续</span>。</blockquote>
+    </div>
+
+    <section class="section" id="dynamic-balance">
+      <div class="balance-intro">
+        <div>
+          <span class="section-number reveal">04 / 选择性完美</span>
+          <h2 class="reveal">多数事情够用，<br>重要的事情<em>做到极致</em></h2>
+        </div>
+        <p class="copy reveal">时间和精力都有限。很多事情做到 60、70 分就足够；真正重要的事情可以投入 100 分——因为它只是多个任务里，被你主动选中的那一项。</p>
+      </div>
+      <figure class="figure reveal">
+        <img src="assets/04-dynamic-balance.png" alt="人物调整任务天平，多件事情保持六七十分，一件重要任务得到一百分，心力仍然充足">
+        <figcaption><span>选择，不是妥协</span><span>它是一种健康的动态平衡</span></figcaption>
+      </figure>
+      <div class="decision-line reveal">把“满分”从默认值，改成选择题</div>
+    </section>
+  </main>
+
+  <section class="finale">
+    <p class="reveal">把 100 分，<br>留给<span>真正重要的事</span>。</p>
+  </section>
+
+  <footer class="footer">
+    <span>关于完美、拖延与行动连续性</span>
+    <span>Illustrated in Tailang style</span>
+  </footer>
+
+  <script>
+    const progress = document.querySelector('.progress-track');
+    const bar = document.querySelector('.progress-bar');
+    let ticking = false;
+
+    function updateProgress() {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const value = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+      bar.style.width = value + '%';
+      progress.setAttribute('aria-valuenow', Math.round(value));
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateProgress);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reveals = document.querySelectorAll('.reveal');
+
+    if (reducedMotion || !('IntersectionObserver' in window)) {
+      reveals.forEach((element) => element.classList.add('is-visible'));
+    } else {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.14 });
+      reveals.forEach((element) => observer.observe(element));
+    }
+
+    updateProgress();
+  </script>
+</body>
+</html>
