@@ -10,15 +10,14 @@ body {
   min-height: 100%;
 }
 
-body {
-  min-height: 100vh;
-  padding: clamp(28px, 5vw, 72px);
+html {
+  scroll-behavior: smooth;
+}
 
-  display: grid;
-  grid-template-columns: minmax(360px, 620px) minmax(280px, 430px);
-  justify-content: center;
-  align-items: center;
-  gap: clamp(50px, 8vw, 130px);
+body {
+  --page-pad-y: clamp(28px, 5vw, 72px);
+  min-height: 100vh;
+  padding: var(--page-pad-y);
 
   background: #faf9f6;
   color: #242321;
@@ -29,6 +28,16 @@ body {
     "Noto Sans SC",
     Arial,
     sans-serif;
+}
+
+/* 首屏：画布 + 介绍，保持原来的两栏 */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(360px, 620px) minmax(280px, 430px);
+  justify-content: center;
+  align-items: center;
+  gap: clamp(50px, 8vw, 130px);
+  min-height: calc(100vh - var(--page-pad-y));
 }
 
 /* 左侧互动插画区域 */
@@ -150,9 +159,13 @@ body {
 /* 平板与窄屏 */
 @media (max-width: 900px) {
   body {
+    --page-pad-y: 32px;
+    padding: 32px;
+  }
+
+  .hero {
     grid-template-columns: minmax(300px, 520px) minmax(240px, 330px);
     gap: 45px;
-    padding: 32px;
   }
 
   #canvas-container {
@@ -167,12 +180,17 @@ body {
 /* 手机：改为上下结构 */
 @media (max-width: 680px) {
   body {
+    --page-pad-y: 24px;
+    padding: 24px 20px 48px;
+  }
+
+  .hero {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-
+    align-items: stretch;
     gap: 36px;
-    padding: 24px 20px 48px;
+    min-height: 0;
   }
 
   #canvas-container {
@@ -207,4 +225,79 @@ body {
   .site-links {
     margin-top: 26px;
   }
+}
+
+/* 作品 */
+.works {
+  width: min(100%, 1170px);
+  margin: clamp(48px, 8vh, 88px) auto 0;
+  scroll-margin-top: 24px;
+}
+
+.works .site-label {
+  margin-bottom: 12px;
+}
+
+.works h2 {
+  margin: 0 0 22px;
+  color: #1f1e1c;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+}
+
+.works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 420px));
+  gap: 18px;
+}
+
+.work-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 22px 20px;
+  color: inherit;
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid #b9b2a8;
+  border-radius: 18px;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.work-card:hover,
+.work-card:focus-visible {
+  border-color: #292723;
+  background: #ffffff;
+  transform: translateY(-2px);
+}
+
+.work-card:focus-visible {
+  outline: 2px solid #292723;
+  outline-offset: 3px;
+}
+
+.work-card h3 {
+  margin: 0;
+  color: #1f1e1c;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.work-card h3 span {
+  color: #8d867d;
+  font-weight: 400;
+}
+
+.work-card p {
+  margin: 0;
+  color: #777168;
+  font-size: 14px;
+  line-height: 1.85;
 }

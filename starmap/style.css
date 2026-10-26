@@ -1,0 +1,474 @@
+/* 思想星图 · Thinking Star Map
+   Typography, pill buttons and gold accent follow dialatan.github.io;
+   the page itself is set at night. */
+
+* { box-sizing: border-box; }
+
+:root {
+  --ink: #0c1124;
+  --paper: #f4efe4;
+  --muted: #a8a397;
+  --gold: rgb(220, 179, 76);
+  --line: rgba(244, 239, 228, 0.28);
+  --panel: rgba(16, 21, 42, 0.92);
+  --font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", Arial, sans-serif;
+  /* Fallback until starmap.js measures the real header. Large enough to avoid overlap. */
+  --header-h: 220px;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#sky {
+  position: fixed;
+  inset: 0;
+  touch-action: manipulation;
+}
+
+#sky canvas { display: block; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  padding: clamp(18px, 3vw, 34px) clamp(18px, 4vw, 56px) 16px;
+  pointer-events: none;
+}
+
+.topbar > * { pointer-events: auto; }
+
+.home-link {
+  display: inline-flex;
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-family: Arial, var(--font);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.home-link:hover { color: var(--paper); }
+
+.home-link:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.site-label {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.2em;
+}
+
+.brand h1 {
+  margin: 0 0 6px;
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 380px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tabs {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(12, 17, 36, 0.55);
+}
+
+.tabs button,
+.pill {
+  min-height: 40px;
+  padding: 0 18px;
+  color: var(--paper);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, border-color 180ms ease;
+}
+
+.tabs button[aria-selected="true"] {
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.pill {
+  border: 1px solid var(--line);
+  background: rgba(12, 17, 36, 0.55);
+}
+
+.pill:hover,
+.tabs button[aria-selected="false"]:hover {
+  border-color: var(--paper);
+  transform: translateY(-1px);
+}
+
+.pill.lang { min-width: 48px; padding: 0 14px; }
+
+button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.hint {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(14px, 3vh, 28px);
+  transform: translateX(-50%);
+  z-index: 15;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+body.view-qa .hint { display: none; }
+
+/* ---------- concept card ---------- */
+.card {
+  position: fixed;
+  z-index: 30;
+  width: min(340px, calc(100vw - 32px));
+  padding: 20px 22px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent, var(--gold));
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  animation: rise 200ms ease;
+}
+
+.card[hidden] { display: none; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.card-writer {
+  margin: 0 0 6px;
+  color: var(--accent, var(--gold));
+  font-family: Arial, var(--font);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.card-sub {
+  margin: 2px 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.card-summary {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #e7e2d6;
+}
+
+.card-quote {
+  margin: 14px 0 0;
+  padding: 10px 0 0 12px;
+  border-left: 2px solid var(--accent, var(--gold));
+}
+
+.card-quote[hidden] { display: none; }
+
+.card-quote blockquote {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--paper);
+}
+
+.card-quote blockquote::before { content: "「"; }
+.card-quote blockquote::after  { content: "」"; }
+
+.card-quote figcaption {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.card-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.card-close:hover { color: var(--paper); background: rgba(255, 255, 255, 0.06); }
+
+/* ---------- Q&A view ---------- */
+/* Scrollport starts below the fixed header so cards never slide underneath it. */
+.qa-view {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: var(--header-h);
+  z-index: 10;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 22px clamp(18px, 4vw, 56px) 72px;
+  background: rgba(12, 17, 36, 0.8);
+}
+
+body.view-qa .topbar {
+  background: rgba(12, 17, 36, 0.96);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(244, 239, 228, 0.14);
+}
+
+.qa-view[hidden] { display: none; }
+
+.qa-intro {
+  max-width: 760px;
+  margin: 0 0 28px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.qa-block { margin: 0 0 40px; }
+
+.qa-block h2 {
+  margin: 0 0 14px;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.qa-block h2 span {
+  margin-right: 10px;
+  color: var(--gold);
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+}
+
+.qa-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.qa-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 16px 14px;
+  text-align: left;
+  color: var(--paper);
+  background: rgba(16, 21, 42, 0.86);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  border-radius: 12px;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.qa-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border-color: var(--accent);
+}
+
+.qa-card.no-star { cursor: default; }
+.qa-card.no-star:hover { transform: none; box-shadow: none; border-color: var(--line); }
+
+.qa-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.qa-name::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+.qa-infer {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--accent);
+  font-style: italic;
+  font-size: 12.5px;
+  opacity: 0.9;
+}
+
+.qa-card.inferred { border-style: dashed; border-top-style: solid; }
+
+.qa-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #e7e2d6;
+}
+
+.qa-link {
+  margin-top: auto;
+  padding-top: 4px;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+/* ---------- About ---------- */
+.about-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(5, 8, 18, 0.6);
+}
+
+.about-backdrop[hidden] { display: none; }
+
+.about-panel {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  padding: 26px 26px 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.about-panel h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.about-panel p:not(.site-label) {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #e7e2d6;
+}
+
+.about-panel p.credit {
+  margin-top: 16px;
+  color: var(--gold);
+  font-size: 13px;
+}
+
+.l-short { display: none; }
+
+.noscript { position: fixed; top: 45%; width: 100%; text-align: center; }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 760px) {
+  .topbar {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 16px 14px;
+  }
+  .home-link { margin-bottom: 8px; }
+  .site-label { margin-bottom: 6px; font-size: 10px; }
+  .brand h1 { font-size: 24px; margin-bottom: 0; }
+  .subtitle { display: none; }
+  .l-full { display: none; }
+  .l-short { display: inline; }
+  .controls { justify-content: flex-start; gap: 8px; }
+  .tabs button, .pill { min-height: 36px; padding: 0 12px; font-size: 13px; }
+  .pill.lang { min-width: 40px; padding: 0 10px; }
+
+  /* card becomes a bottom sheet */
+  .card {
+    left: 12px !important;
+    right: 12px;
+    top: auto !important;
+    bottom: 12px;
+    width: auto;
+    max-height: 56vh;
+    overflow-y: auto;
+  }
+
+  .qa-grid { grid-template-columns: 1fr; gap: 10px; }
+  .hint { bottom: 10px; }
+}
+
+@media (min-width: 761px) and (max-width: 1100px) {
+  .qa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
