@@ -1,33 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>小枝的世界 · dialatan</title>
+    <meta name="theme-color" content="#f6f3ec" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="stylesheet" href="assets/theme.css" />
+    <link rel="stylesheet" type="text/css" href="style.css?v=6" />
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/p5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/addons/p5.sound.min.js"></script>
-    
-    
-    
-    <link rel="stylesheet" type="text/css" href="style.css?v=3"">
-    <meta charset="utf-8" />
-
   </head>
   <body>
-    <main id="canvas-container">
-    </main>
-    <div class="site-intro">
-  <p class="site-label">WELCOME TO MY LITTLE WORLD</p>
+    <div class="hero">
+      <main id="canvas-container">
+        <nav id="sky-links" class="sky-links" aria-label="插画里的入口"></nav>
+      </main>
+      <div class="site-intro">
+        <p class="site-label">WELCOME TO MY LITTLE WORLD</p>
 
-  <h1>欢迎来到<br>小枝的世界</h1>
+        <h1>欢迎来到<br>小枝的世界</h1>
 
-  <p class="site-description">
-    这里收集画画，互动实验，AI创作<br>
-    以及普通生活里偶尔亮起来的瞬间
-  </p>
+        <p class="name-line">小枝 · Dialatan</p>
+        <p class="en-intro" lang="en">Xiaozhi · learning UE, Blender and AI-assisted coding, and turning ideas into small things you can click.</p>
 
-  <div class="site-links">
-    <a href="./archives/">查看以前的日记</a>
-    <a href="./about/">关于我</a>
-  </div>
-</div>
+        <p class="site-description">
+          这里收集画画，互动实验，AI创作<br>
+          以及普通生活里偶尔亮起来的瞬间
+        </p>
+
+        <div class="site-links">
+          <a href="./archives/">查看以前的日记</a>
+          <a href="./about/">关于我</a>
+          <a href="#works">作品 / Works</a>
+        </div>
+      </div>
+    </div>
+
+    <section class="works" id="works" aria-labelledby="works-title">
+      <p class="site-label">WORKS</p>
+      <h2 id="works-title">作品 / Works</h2>
+      <div class="works-grid">
+        <a class="work-card" href="/starmap/" data-nightfall>
+          <span class="work-cover">
+            <img src="assets/covers/starmap.webp" alt="" width="960" height="600" />
+          </span>
+          <ul class="work-tags">
+            <li>Codex</li>
+            <li>JavaScript</li>
+            <li>2026</li>
+            <li>中/EN</li>
+            <li class="is-ai">AI-assisted</li>
+          </ul>
+          <h3>思想星图 <span lang="en">/ Thinking Star Map</span></h3>
+          <p>用 AI 辅助整理四位中文写作者反复出现的想法，画成一片可以点开的星空。 <span lang="en">Recurring ideas of four Chinese writers, mapped as an interactive night sky with AI-assisted research.</span></p>
+        </a>
+
+        <a class="work-card" href="/art/">
+          <span class="work-cover is-tall">
+            <img src="assets/art/zine/11-1.webp" alt="" width="840" height="1400" />
+          </span>
+          <ul class="work-tags">
+            <li>Codex</li>
+            <li class="is-ai">AI-assisted / AI-generated</li>
+            <li>中文</li>
+            <li>2026</li>
+          </ul>
+          <h3>画作 <span lang="en">/ Drawings</span></h3>
+          <p>AI 辅助的画作，从照片出发。 <span lang="en">AI-assisted drawings made from photos.</span></p>
+        </a>
+      </div>
+    </section>
+
+    <div class="nightfall" id="nightfall" aria-hidden="true">
+      <canvas id="nightfall-stars"></canvas>
+    </div>
+
+    <script src="assets/works.js"></script>
     <script src="sketch.js"></script>
+    <script src="assets/transition.js"></script>
   </body>
 </html>

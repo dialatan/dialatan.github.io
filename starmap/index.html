@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>思想星图 · Thinking Star Map</title>
+    <meta name="description" content="用星座的方式浏览四份“人物思想地图”研究草稿。A star-map view of four draft research reports on Chinese writers' recurring ideas." />
+    <meta name="theme-color" content="#0c1124" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="../favicon.ico" sizes="32x32" />
+    <link rel="stylesheet" href="../assets/theme.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/p5.min.js"></script>
+  </head>
+  <body class="view-map enter">
+    <main id="sky" aria-label="思想星图"></main>
+
+    <header class="topbar">
+      <div class="brand">
+        <a class="home-link" href="../" data-dawn>← 回到首页 / Home</a>
+        <p class="site-label" data-i18n="pageLabel"></p>
+        <h1 data-i18n="title"></h1>
+        <p class="subtitle" data-i18n="subtitle"></p>
+      </div>
+      <nav class="controls" aria-label="视图">
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" id="tab-map" aria-selected="true" aria-controls="sky" data-i18n="tabMap"></button>
+          <button type="button" role="tab" id="tab-qa" aria-selected="false" aria-controls="qa-view"><span class="l-full" data-i18n="tabQA"></span><span class="l-short" data-i18n="tabQAShort"></span></button>
+        </div>
+        <button type="button" class="pill" id="about-btn" aria-haspopup="dialog"><span class="l-full" data-i18n="about"></span><span class="l-short" data-i18n="aboutShort"></span></button>
+        <button type="button" class="pill lang" id="lang-btn"></button>
+      </nav>
+    </header>
+
+    <p class="hint" id="hint" aria-live="polite"></p>
+
+    <!-- concept card (filled by starmap.js) -->
+    <article id="card" class="card" hidden aria-live="polite">
+      <button type="button" class="card-close" id="card-close" aria-label="关闭">×</button>
+      <p class="card-writer" id="card-writer"></p>
+      <h2 id="card-title"></h2>
+      <p class="card-sub" id="card-sub"></p>
+      <p class="card-summary" id="card-summary"></p>
+      <figure class="card-quote" id="card-quote">
+        <blockquote id="card-quote-text"></blockquote>
+        <figcaption id="card-quote-cap"></figcaption>
+      </figure>
+    </article>
+
+    <!-- One question, four answers -->
+    <section id="qa-view" class="qa-view" hidden aria-labelledby="tab-qa">
+      <p class="qa-intro" id="qa-intro"></p>
+      <div id="qa-list"></div>
+    </section>
+
+    <!-- About panel -->
+    <div id="about" class="about-backdrop" hidden>
+      <section class="about-panel" role="dialog" aria-modal="true" aria-labelledby="about-title">
+        <button type="button" class="card-close" id="about-close" aria-label="关闭">×</button>
+        <p class="site-label">ABOUT</p>
+        <h2 id="about-title"></h2>
+        <div id="about-body"></div>
+      </section>
+    </div>
+
+    <!-- text fallback for screen readers / no-JS -->
+    <noscript><p class="noscript">这个页面需要 JavaScript 来绘制星图。This page needs JavaScript to draw the star map.</p></noscript>
+
+    <div class="nightfall" id="nightfall" aria-hidden="true">
+      <canvas id="nightfall-stars"></canvas>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="starmap.js"></script>
+    <script src="../assets/transition.js"></script>
+  </body>
+</html>
