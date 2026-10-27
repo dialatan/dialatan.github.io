@@ -8,13 +8,15 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="favicon.ico" sizes="32x32" />
     <link rel="stylesheet" href="assets/theme.css" />
-    <link rel="stylesheet" type="text/css" href="style.css?v=4" />
+    <link rel="stylesheet" type="text/css" href="style.css?v=5" />
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/p5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/addons/p5.sound.min.js"></script>
   </head>
   <body>
     <div class="hero">
-      <main id="canvas-container"></main>
+      <main id="canvas-container">
+        <nav id="sky-links" class="sky-links" aria-label="插画里的入口"></nav>
+      </main>
       <div class="site-intro">
         <p class="site-label">WELCOME TO MY LITTLE WORLD</p>
 
@@ -61,6 +63,7 @@
       <canvas id="nightfall-stars"></canvas>
     </div>
 
+    <script src="assets/works.js"></script>
     <script src="sketch.js"></script>
     <script src="assets/transition.js"></script>
   </body>

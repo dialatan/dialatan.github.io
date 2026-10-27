@@ -52,17 +52,12 @@
     }
   }
 
-  function bind(selector, mode) {
-    document.querySelectorAll(selector).forEach(function (el) {
-      el.addEventListener("click", function (e) {
-        if (e.defaultPrevented || e.button !== 0) return;
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-        e.preventDefault();
-        go(el.href, mode);
-      });
-    });
-  }
-
-  bind("[data-nightfall]", "night");
-  bind("[data-dawn]", "dawn");
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-nightfall], [data-dawn]");
+    if (!el) return;
+    if (e.defaultPrevented || e.button !== 0) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    go(el.href, el.hasAttribute("data-dawn") ? "dawn" : "night");
+  });
 })();

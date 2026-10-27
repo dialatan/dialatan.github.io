@@ -16,18 +16,34 @@ let soundReady = false;
 let lastGlobalChime = 0;
 
 const GOLD = [220, 179, 76];
+const INK = [28, 27, 25];
+const PAPER = [246, 243, 236];
 const LEFT_ANCHOR = { x: 232, y: 406 };
 const RIGHT_ANCHOR = { x: 350, y: 414 };
 const ROPE_LENGTH = 690;
+// Pendant stars finish inside the closed outline. Longer strings are capped.
+const MAX_PENDANT_Y = 1132;
+const PENDANT_LIMIT = 1156;
+// First entry hangs on the left, clear of the moon. Later works fill later slots.
+const WORK_STAR_SLOTS = [0, 11, 10, 2, 4, 6, 8, 9, 1, 3, 5, 7];
+
+let reduceMotion = false;
+let workLinks = [];
+let moonLink = null;
+let hotWork = -1;
+let hotMoon = false;
 
 function setup() {
+  reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const canvas = createCanvas(1000, 1250);
   canvas.parent("canvas-container");
+  canvas.elt.style.background = "transparent";
   pixelDensity(2);
   strokeCap(ROUND);
   strokeJoin(ROUND);
   setupChimes();
   resetAnimation();
+  buildSkyLinks();
 }
 
 function resetAnimation() {
@@ -55,14 +71,14 @@ function resetAnimation() {
   for (let i = 0; i < xs.length; i++) {
     const nodeCount = 9 + (i % 3);
     const nodes = [];
+    const top = branchY(xs[i]) + 8;
     for (let n = 0; n < nodeCount; n++) {
-      const ny = branchY(xs[i]) + 8;
-      nodes.push({ x: xs[i], y: ny, px: xs[i], py: ny });
+      nodes.push({ x: xs[i], y: top, px: xs[i], py: top });
     }
     stars.push({
       x: xs[i],
-      top: branchY(xs[i]) + 8,
-      target: lengths[i],
+      top,
+      target: min(lengths[i], MAX_PENDANT_Y - top),
       length: 0,
       speed: 0,
       delay: 0.25 + i * 0.16,
@@ -72,10 +88,31 @@ function resetAnimation() {
       nodes
     });
   }
+  if (reduceMotion) settleStill();
+}
+
+function settleStill() {
+  moonState = "ride";
+  impactAge = 99;
+  swing.angle = 0;
+  swing.velocity = 0;
+  for (const s of stars) {
+    s.length = s.target;
+    s.speed = 0;
+    const count = s.nodes.length;
+    const seg = s.target / (count - 1);
+    for (let n = 0; n < count; n++) {
+      const y = s.top + seg * n;
+      s.nodes[n].x = s.x;
+      s.nodes[n].y = y;
+      s.nodes[n].px = s.x;
+      s.nodes[n].py = y;
+    }
+  }
 }
 
 function draw() {
-  background(253, 253, 251);
+  clear();
   const t = (millis() - startTime) / 1000;
   const dt = min(deltaTime / 1000, 0.033);
 
@@ -86,9 +123,16 @@ function draw() {
   drawSwing();
   drawMoon();
   drawImpact();
+  syncSkyControls();
 }
 
 function updateAnimation(t, dt) {
+  if (reduceMotion) {
+    moonState = "ride";
+    swing.velocity = 0;
+    return;
+  }
+
   const flightDuration = 2.45;
   if (t < flightDuration) {
     moonState = "slide";
@@ -111,18 +155,23 @@ function updateAnimation(t, dt) {
     }
 
     if (!draggingSwing) {
-      // damped physical pendulum: theta'' = -(g/L)sin(theta) - damping*theta'
-      const gravity = 1250;
-      const damping = 0.23;
-      const acceleration = -(gravity / ROPE_LENGTH) * sin(swing.angle)
-        - damping * swing.velocity;
-      swing.velocity += acceleration * dt;
-      swing.angle += swing.velocity * dt;
-    }
-
-    if (abs(swing.velocity) < 0.00035 && abs(swing.angle) < 0.00035) {
-      swing.velocity = 0;
-      swing.angle = 0;
+      const calm = impactAge > 3.2
+        && abs(swing.velocity) < 0.16
+        && abs(swing.angle) < 0.14;
+      if (calm) {
+        // Slow depth sway, like a pendulum that keeps a small arc.
+        const sway = 0.058 * sin(t * 0.46);
+        swing.angle = lerp(swing.angle, sway, 1 - pow(0.002, dt));
+        swing.velocity = 0.058 * 0.46 * cos(t * 0.46);
+      } else {
+        // damped physical pendulum: theta'' = -(g/L)sin(theta) - damping*theta'
+        const gravity = 1250;
+        const damping = 0.23;
+        const acceleration = -(gravity / ROPE_LENGTH) * sin(swing.angle)
+          - damping * swing.velocity;
+        swing.velocity += acceleration * dt;
+        swing.angle += swing.velocity * dt;
+      }
     }
     impactAge += dt;
   }
@@ -132,20 +181,25 @@ function drawStarCurtain(t, dt) {
   for (let i = 0; i < stars.length; i++) {
     const s = stars[i];
     const local = t - s.delay;
-    if (local <= 0) continue;
+    if (local <= 0 && !reduceMotion) continue;
 
-    // Spring growth creates drop and rebound.
-    const force = (s.target - s.length) * 24;
-    s.speed += force * dt;
-    s.speed *= pow(0.055, dt);
-    s.length += s.speed * dt;
-    s.length = max(2, s.length);
+    if (reduceMotion) {
+      s.length = s.target;
+      s.speed = 0;
+    } else {
+      // Spring growth creates drop and rebound.
+      const force = (s.target - s.length) * 24;
+      s.speed += force * dt;
+      s.speed *= pow(0.055, dt);
+      s.length += s.speed * dt;
+      s.length = max(2, s.length);
+    }
 
     const seat = seatCenter();
     simulateFlexibleStrand(s, seat, dt, i);
 
-    const breathe = 0.82 + 0.18 * sin(frameCount * 0.025 + s.phase);
-    stroke(20, 20, 18, 105);
+    const breathe = reduceMotion ? 1 : 0.82 + 0.18 * sin(frameCount * 0.025 + s.phase);
+    stroke(INK[0], INK[1], INK[2], 150);
     strokeWeight(1.15);
     noFill();
     beginShape();
@@ -164,7 +218,7 @@ function drawStarCurtain(t, dt) {
     const nearMoon = constrain(1 - dist(pendant.x, pendant.y, seat.x,
       seat.y - 45 * seat.scale) / 190, 0, 1);
     drawTinyStar(pendant.x, pendant.y, size,
-      breathe * (1 + nearMoon * 0.32));
+      breathe * (1 + nearMoon * 0.32), starIsHot(i));
   }
 }
 
@@ -234,8 +288,12 @@ function simulateFlexibleStrand(s, seat, dt, strandIndex) {
 
     // Vertical rest-pose spring: strong enough to hang straight at rest,
     // gentle enough to keep a visible flexible bend during interaction.
+    // A slow sideways bias lets the stars sway on their strings.
     const depthRatio = n / (nodes.length - 1);
-    p.x += (s.x - p.x) * (0.010 - depthRatio * 0.003);
+    const sway = reduceMotion
+      ? 0
+      : sin(millis() * 0.00055 + s.phase) * 11 * depthRatio;
+    p.x += (s.x + sway - p.x) * (0.010 - depthRatio * 0.003);
   }
 
   // More constraint passes reduce excessive softness.
@@ -295,6 +353,14 @@ function simulateFlexibleStrand(s, seat, dt, strandIndex) {
   nodes[0].px = s.x;
   nodes[0].py = s.top;
 
+  // Keep a pendant that overshoots its spring inside the outline.
+  for (let n = 1; n < nodes.length; n++) {
+    if (nodes[n].y > PENDANT_LIMIT) {
+      nodes[n].y = PENDANT_LIMIT;
+      nodes[n].py = nodes[n].y;
+    }
+  }
+
   // Collision-entry latch: one sound per encounter. It cannot retrigger
   // until the swing has moved clearly away from this pendant star.
   const pendant = nodes[nodes.length - 1];
@@ -327,18 +393,19 @@ function simulateFlexibleStrand(s, seat, dt, strandIndex) {
   }
 }
 
-function drawTinyStar(x, y, r, breathe) {
+function drawTinyStar(x, y, r, breathe, hot) {
   push();
   translate(x, y);
   rotate(-PI / 2);
   noStroke();
-  fill(GOLD[0], GOLD[1], GOLD[2], 20 * breathe);
-  circle(0, 0, r * 5.2);
-  fill(GOLD[0], GOLD[1], GOLD[2], 54 * breathe);
-  circle(0, 0, r * 2.7);
-  stroke(12, 12, 10, 205);
-  strokeWeight(0.9);
-  fill(253, 253, 251, 240);
+  const glow = hot ? 1 : 0;
+  fill(GOLD[0], GOLD[1], GOLD[2], (22 + glow * 55) * breathe);
+  circle(0, 0, r * (5.4 + glow * 2.6));
+  fill(GOLD[0], GOLD[1], GOLD[2], (58 + glow * 80) * breathe);
+  circle(0, 0, r * (2.8 + glow * 1.1));
+  stroke(INK[0], INK[1], INK[2], hot ? 230 : 170);
+  strokeWeight(hot ? 1.2 : 0.9);
+  fill(GOLD[0], GOLD[1], GOLD[2], hot ? 255 : 235);
   beginShape();
   for (let k = 0; k < 10; k++) {
     const a = k * PI / 5;
@@ -353,11 +420,11 @@ function drawSwing() {
   const g = swingGeometry();
   const left = g.left;
   const right = g.right;
-  stroke(15);
+  stroke(INK[0], INK[1], INK[2]);
   noFill();
   strokeWeight(2.7);
   const flex = constrain(-swing.velocity * 17, -22, 22);
-  const breath = sin(frameCount * 0.035) * 2.2;
+  const breath = reduceMotion ? 0 : sin(frameCount * 0.035) * 2.2;
   drawSoftRope(LEFT_ANCHOR, left, flex + breath);
   drawSoftRope(RIGHT_ANCHOR, right, flex * 0.82 - breath);
 
@@ -366,7 +433,7 @@ function drawSwing() {
   translate(c.x, c.y);
   scale(g.scale);
   strokeWeight(2.2);
-  fill(253, 253, 251);
+  fill(PAPER[0], PAPER[1], PAPER[2]);
   beginShape();
   vertex(-112, -9); vertex(108, -9); vertex(126, 3); vertex(-92, 28);
   endShape(CLOSE);
@@ -423,7 +490,9 @@ function drawMoon() {
 
   if (moonState === "ride") {
     const c = seatCenter();
-    const bounce = impactAge < 0.55 ? exp(-impactAge * 6) * sin(impactAge * 28) : 0;
+    const bounce = (!reduceMotion && impactAge >= 0 && impactAge < 0.55)
+      ? exp(-impactAge * 6) * sin(impactAge * 28)
+      : 0;
     x = c.x;
     y = c.y - 53 * c.scale;
     rot = 0;
@@ -436,13 +505,13 @@ function drawMoon() {
   rotate(rot);
   scale(sx, sy);
   noStroke();
-  fill(GOLD[0], GOLD[1], GOLD[2], 13);
-  circle(0, 0, 120);
-  fill(GOLD[0], GOLD[1], GOLD[2], 22);
-  circle(0, 0, 88);
-  stroke(10);
+  fill(GOLD[0], GOLD[1], GOLD[2], hotMoon ? 55 : 20);
+  circle(0, 0, hotMoon ? 156 : 120);
+  fill(GOLD[0], GOLD[1], GOLD[2], hotMoon ? 78 : 32);
+  circle(0, 0, hotMoon ? 112 : 88);
+  stroke(INK[0], INK[1], INK[2]);
   strokeWeight(2.2);
-  fill(253, 253, 251);
+  fill(GOLD[0], GOLD[1], GOLD[2]);
   beginShape();
   vertex(-8, -55);
   bezierVertex(35, -52, 55, -20, 50, 15);
@@ -465,7 +534,7 @@ function drawImpact() {
 }
 
 function drawCliff() {
-  stroke(8); strokeWeight(4.5); noFill();
+  stroke(INK[0], INK[1], INK[2]); strokeWeight(4.5); noFill();
   beginShape();
   vertex(232, 406);
   bezierVertex(280,397,311,402,344,417);
@@ -489,18 +558,21 @@ function drawCliff() {
   bezierVertex(175,415,128,448,99,500);
   bezierVertex(68,556,73,638,82,713);
   bezierVertex(91,794,104,889,121,979);
-  bezierVertex(138,1072,150,1148,183,1190);
-  bezierVertex(214,1230,262,1240,302,1231);
-  bezierVertex(324,1226,339,1223,359,1231);
-  bezierVertex(383,1241,405,1242,427,1228);
-  bezierVertex(455,1211,478,1181,507,1198);
-  bezierVertex(540,1218,574,1222,611,1222);
-  bezierVertex(684,1222,756,1228,824,1195);
+  bezierVertex(138,1046,152,1102,183,1130);
+  bezierVertex(214,1164,258,1176,302,1168);
+  bezierVertex(328,1162,342,1158,362,1166);
+  bezierVertex(386,1176,408,1178,430,1164);
+  bezierVertex(458,1146,480,1122,508,1136);
+  bezierVertex(542,1152,576,1158,612,1154);
+  bezierVertex(686,1152,752,1158,818,1134);
+  bezierVertex(876,1102,918,1016,944,916);
+  bezierVertex(968,822,984,724,976,636);
+  bezierVertex(968,552,960,508,972,485);
   endShape();
 }
 
 function drawDeer() {
-  noFill(); stroke(8); strokeWeight(3.2);
+  noFill(); stroke(INK[0], INK[1], INK[2]); strokeWeight(3.2);
   beginShape();
   vertex(228,280); bezierVertex(260,271,303,272,324,287);
   bezierVertex(340,298,345,322,350,351);
@@ -760,6 +832,120 @@ function drawHeart(x, y, size) {
   bezierVertex(size, -size, size * 1.5, 0, 0, size);
   endShape(CLOSE);
   pop();
+}
+
+function starIsHot(starIndex) {
+  return hotWork >= 0 && WORK_STAR_SLOTS[hotWork] === starIndex;
+}
+
+function moonAnchor() {
+  if (moonState === "ride") {
+    const c = seatCenter();
+    return { x: c.x, y: c.y - 53 * c.scale };
+  }
+  return { x: moon.x, y: moon.y };
+}
+
+function makeSkyLink(url, tip, kind) {
+  const link = document.createElement("a");
+  link.className = "sky-hit";
+  link.href = url;
+  link.setAttribute("data-nightfall", "");
+  link.setAttribute("data-sky", kind);
+  link.setAttribute("data-tip", tip);
+  link.setAttribute("aria-label", tip);
+  return link;
+}
+
+function buildSkyLinks() {
+  const nav = document.getElementById("sky-links");
+  if (!nav) return;
+  nav.replaceChildren();
+  workLinks = [];
+  hotWork = -1;
+  hotMoon = false;
+  const works = (typeof WORKS !== "undefined" && Array.isArray(WORKS)) ? WORKS : [];
+  for (let i = 0; i < works.length && i < WORK_STAR_SLOTS.length; i++) {
+    const work = works[i];
+    const tip = work.title_zh + " / " + work.title_en;
+    const link = makeSkyLink(work.url, tip, "work");
+    const index = i;
+    link.hidden = true;
+    link.addEventListener("pointerenter", () => { hotWork = index; });
+    link.addEventListener("pointerleave", () => { if (hotWork === index) hotWork = -1; });
+    link.addEventListener("focus", () => { hotWork = index; });
+    link.addEventListener("blur", () => { if (hotWork === index) hotWork = -1; });
+    nav.appendChild(link);
+    workLinks.push(link);
+  }
+  moonLink = makeSkyLink("/starmap/", "天黑了 · Nightfall", "moon");
+  moonLink.addEventListener("pointerenter", () => { hotMoon = true; });
+  moonLink.addEventListener("pointerleave", () => { hotMoon = false; });
+  moonLink.addEventListener("focus", () => { hotMoon = true; });
+  moonLink.addEventListener("blur", () => { hotMoon = false; });
+  nav.appendChild(moonLink);
+}
+
+function syncSkyControls() {
+  const canvasEl = document.querySelector("#canvas-container canvas");
+  const container = document.getElementById("canvas-container");
+  if (!canvasEl || !container) return;
+  const cr = canvasEl.getBoundingClientRect();
+  const pr = container.getBoundingClientRect();
+  if (cr.width < 2 || cr.height < 2) return;
+  const sx = cr.width / width;
+  const sy = cr.height / height;
+  const ox = cr.left - pr.left;
+  const oy = cr.top - pr.top;
+
+  for (let i = 0; i < workLinks.length; i++) {
+    const strand = stars[WORK_STAR_SLOTS[i]];
+    const link = workLinks[i];
+    const ready = strand
+      && strand.nodes.length > 0
+      && strand.length >= Math.max(24, strand.target * 0.72);
+    if (!ready) {
+      link.hidden = true;
+      continue;
+    }
+    const pendant = strand.nodes[strand.nodes.length - 1];
+    const gap = strandGap(WORK_STAR_SLOTS[i]);
+    // As wide as the gap allows, and tall enough to tap. The next star stays outside
+    // on a mouse. A finger needs a larger target, so touch uses at least 44px.
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    let hitW = gap * 0.9;
+    let hitH = Math.max(48 / sy, Math.min(170, gap * 2.3));
+    if (coarse) {
+      hitW = Math.max(hitW, 44 / sx);
+      hitH = Math.max(hitH, 44 / sy);
+    }
+    placeHit(link, pendant.x, pendant.y, ox, oy, sx, sy, hitW, hitH);
+    link.style.zIndex = "1";
+  }
+
+  if (!moonLink) return;
+  const anchored = moonAnchor();
+  // The moon is larger than a pendant star and sits clear of the strings.
+  placeHit(moonLink, anchored.x, anchored.y, ox, oy, sx, sy, 118, 118);
+  moonLink.style.zIndex = "2";
+}
+
+function strandGap(index) {
+  const x = stars[index].x;
+  let gap = 90;
+  for (let i = 0; i < stars.length; i++) {
+    if (i === index) continue;
+    gap = min(gap, abs(stars[i].x - x));
+  }
+  return gap;
+}
+
+function placeHit(link, x, y, ox, oy, sx, sy, canvasW, canvasH) {
+  link.hidden = false;
+  link.style.left = (ox + x * sx) + "px";
+  link.style.top = (oy + y * sy) + "px";
+  link.style.width = (canvasW * sx) + "px";
+  link.style.height = (canvasH * sy) + "px";
 }
 
 function branchY(x) {
