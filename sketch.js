@@ -21,10 +21,9 @@ const PAPER = [246, 243, 236];
 const LEFT_ANCHOR = { x: 232, y: 406 };
 const RIGHT_ANCHOR = { x: 350, y: 414 };
 const ROPE_LENGTH = 690;
-// Pendant stars finish inside the closed outline. Longer strings are capped.
-const MAX_PENDANT_Y = 1132;
-const PENDANT_LIMIT = 1156;
-// First entry hangs on the left, clear of the moon. Later works fill later slots.
+// Original pendant lengths. The closed outline sits just below these.
+const PENDANT_ROOM = 1208;
+// First entry is the far-right star, clear of the swing. Later works fill later slots.
 const WORK_STAR_SLOTS = [0, 11, 10, 2, 4, 6, 8, 9, 1, 3, 5, 7];
 
 let reduceMotion = false;
@@ -78,7 +77,7 @@ function resetAnimation() {
     stars.push({
       x: xs[i],
       top,
-      target: min(lengths[i], MAX_PENDANT_Y - top),
+      target: min(lengths[i], PENDANT_ROOM - top),
       length: 0,
       speed: 0,
       delay: 0.25 + i * 0.16,
@@ -129,7 +128,7 @@ function draw() {
 function updateAnimation(t, dt) {
   if (reduceMotion) {
     moonState = "ride";
-    swing.velocity = 0;
+    if (!draggingSwing) swing.velocity = 0;
     return;
   }
 
@@ -155,23 +154,18 @@ function updateAnimation(t, dt) {
     }
 
     if (!draggingSwing) {
-      const calm = impactAge > 3.2
-        && abs(swing.velocity) < 0.16
-        && abs(swing.angle) < 0.14;
-      if (calm) {
-        // Slow depth sway, like a pendulum that keeps a small arc.
-        const sway = 0.058 * sin(t * 0.46);
-        swing.angle = lerp(swing.angle, sway, 1 - pow(0.002, dt));
-        swing.velocity = 0.058 * 0.46 * cos(t * 0.46);
-      } else {
-        // damped physical pendulum: theta'' = -(g/L)sin(theta) - damping*theta'
-        const gravity = 1250;
-        const damping = 0.23;
-        const acceleration = -(gravity / ROPE_LENGTH) * sin(swing.angle)
-          - damping * swing.velocity;
-        swing.velocity += acceleration * dt;
-        swing.angle += swing.velocity * dt;
-      }
+      // damped physical pendulum: theta'' = -(g/L)sin(theta) - damping*theta'
+      const gravity = 1250;
+      const damping = 0.23;
+      const acceleration = -(gravity / ROPE_LENGTH) * sin(swing.angle)
+        - damping * swing.velocity;
+      swing.velocity += acceleration * dt;
+      swing.angle += swing.velocity * dt;
+    }
+
+    if (abs(swing.velocity) < 0.00035 && abs(swing.angle) < 0.00035) {
+      swing.velocity = 0;
+      swing.angle = 0;
     }
     impactAge += dt;
   }
@@ -203,23 +197,47 @@ function drawStarCurtain(t, dt) {
     strokeWeight(1.15);
     noFill();
     beginShape();
-    const first = s.nodes[0];
+    const first = lean(s, s.nodes[0].x, s.nodes[0].y);
     curveVertex(first.x, first.y);
     curveVertex(first.x, first.y);
-    for (const node of s.nodes) curveVertex(node.x, node.y);
-    const last = s.nodes[s.nodes.length - 1];
-    curveVertex(last.x, last.y);
-    curveVertex(last.x, last.y);
+    let pendant = first;
+    for (const node of s.nodes) {
+      pendant = lean(s, node.x, node.y);
+      curveVertex(pendant.x, pendant.y);
+    }
+    curveVertex(pendant.x, pendant.y);
+    curveVertex(pendant.x, pendant.y);
     endShape();
+    s.drawX = pendant.x;
+    s.drawY = pendant.y;
 
     // One larger pendant star at the end of each vertical hanging line.
-    const pendant = s.nodes[s.nodes.length - 1];
     const size = 9.0 + (i % 3) * 1.5;
     const nearMoon = constrain(1 - dist(pendant.x, pendant.y, seat.x,
       seat.y - 45 * seat.scale) / 190, 0, 1);
     drawTinyStar(pendant.x, pendant.y, size,
       breathe * (1 + nearMoon * 0.32), starIsHot(i));
   }
+}
+
+// A few degrees of lean, drawn on top of the simulated string.
+// The verlet nodes themselves stay on the original physics.
+function idleStringAngle(s) {
+  if (reduceMotion) return 0;
+  return 0.012 * sin(millis() * 0.00045 + s.phase);
+}
+
+function lean(s, x, y) {
+  const angle = idleStringAngle(s);
+  if (angle === 0) return { x, y };
+  const dx = x - s.x;
+  const dy = y - s.top;
+  const c = cos(angle);
+  const sn = sin(angle);
+  return {
+    x: s.x + dx * c - dy * sn,
+    y: s.top + dx * sn + dy * c
+  };
 }
 
 function simulateFlexibleStrand(s, seat, dt, strandIndex) {
@@ -288,12 +306,8 @@ function simulateFlexibleStrand(s, seat, dt, strandIndex) {
 
     // Vertical rest-pose spring: strong enough to hang straight at rest,
     // gentle enough to keep a visible flexible bend during interaction.
-    // A slow sideways bias lets the stars sway on their strings.
     const depthRatio = n / (nodes.length - 1);
-    const sway = reduceMotion
-      ? 0
-      : sin(millis() * 0.00055 + s.phase) * 11 * depthRatio;
-    p.x += (s.x + sway - p.x) * (0.010 - depthRatio * 0.003);
+    p.x += (s.x - p.x) * (0.010 - depthRatio * 0.003);
   }
 
   // More constraint passes reduce excessive softness.
@@ -353,14 +367,6 @@ function simulateFlexibleStrand(s, seat, dt, strandIndex) {
   nodes[0].px = s.x;
   nodes[0].py = s.top;
 
-  // Keep a pendant that overshoots its spring inside the outline.
-  for (let n = 1; n < nodes.length; n++) {
-    if (nodes[n].y > PENDANT_LIMIT) {
-      nodes[n].y = PENDANT_LIMIT;
-      nodes[n].py = nodes[n].y;
-    }
-  }
-
   // Collision-entry latch: one sound per encounter. It cannot retrigger
   // until the swing has moved clearly away from this pendant star.
   const pendant = nodes[nodes.length - 1];
@@ -417,7 +423,7 @@ function drawTinyStar(x, y, r, breathe, hot) {
 }
 
 function drawSwing() {
-  const g = swingGeometry();
+  const g = drawnSwingGeometry();
   const left = g.left;
   const right = g.right;
   stroke(INK[0], INK[1], INK[2]);
@@ -464,9 +470,26 @@ function seatCenter() {
 // Perspective projection of a pendulum swinging toward/away from the viewer.
 // Positive angle is farther/smaller; negative angle is nearer/larger.
 function swingGeometry() {
+  return swingGeometryAt(swing.angle);
+}
+
+// Drawn a hair off the simulated angle once the landing swing has died,
+// so the seat keeps a slow pendulum without changing the physics.
+function drawnSwingGeometry() {
+  return swingGeometryAt(swing.angle + idleSwingOffset());
+}
+
+function idleSwingOffset() {
+  if (reduceMotion || draggingSwing || moonState !== "ride") return 0;
+  if (impactAge < 4.5) return 0;
+  if (abs(swing.velocity) > 0.04 || abs(swing.angle) > 0.04) return 0;
+  return 0.02 * sin(millis() * 0.0004);
+}
+
+function swingGeometryAt(angle) {
   const horizonX = (LEFT_ANCHOR.x + RIGHT_ANCHOR.x) / 2;
   const horizonY = (LEFT_ANCHOR.y + RIGHT_ANCHOR.y) / 2;
-  const depth = sin(swing.angle) * ROPE_LENGTH;
+  const depth = sin(angle) * ROPE_LENGTH;
   const focal = 900;
   const scale = constrain(focal / (focal + depth * 0.72), 0.68, 1.42);
   const baseX = 395;
@@ -474,7 +497,7 @@ function swingGeometry() {
     x: horizonX + (baseX - horizonX) * scale,
     // The arc rises at both extremes; perspective changes size without
     // pushing the near seat out of the bottom of the canvas.
-    y: horizonY + cos(swing.angle) * ROPE_LENGTH * (0.88 + 0.12 * scale)
+    y: horizonY + cos(angle) * ROPE_LENGTH * (0.88 + 0.12 * scale)
   };
   return {
     scale,
@@ -489,12 +512,12 @@ function drawMoon() {
   let sx = moon.sx, sy = moon.sy;
 
   if (moonState === "ride") {
-    const c = seatCenter();
+    const c = drawnSwingGeometry();
     const bounce = (!reduceMotion && impactAge >= 0 && impactAge < 0.55)
       ? exp(-impactAge * 6) * sin(impactAge * 28)
       : 0;
-    x = c.x;
-    y = c.y - 53 * c.scale;
+    x = c.center.x;
+    y = c.center.y - 53 * c.scale;
     rot = 0;
     sx = c.scale * (1 + bounce * 0.14);
     sy = c.scale * (1 - bounce * 0.18);
@@ -558,16 +581,16 @@ function drawCliff() {
   bezierVertex(175,415,128,448,99,500);
   bezierVertex(68,556,73,638,82,713);
   bezierVertex(91,794,104,889,121,979);
-  bezierVertex(138,1046,152,1102,183,1130);
-  bezierVertex(214,1164,258,1176,302,1168);
-  bezierVertex(328,1162,342,1158,362,1166);
-  bezierVertex(386,1176,408,1178,430,1164);
-  bezierVertex(458,1146,480,1122,508,1136);
-  bezierVertex(542,1152,576,1158,612,1154);
-  bezierVertex(686,1152,752,1158,818,1134);
-  bezierVertex(876,1102,918,1016,944,916);
-  bezierVertex(968,822,984,724,976,636);
-  bezierVertex(968,552,960,508,972,485);
+  bezierVertex(138,1072,150,1148,183,1172);
+  bezierVertex(214,1212,262,1222,302,1213);
+  bezierVertex(324,1208,339,1205,359,1213);
+  bezierVertex(383,1223,405,1224,427,1210);
+  bezierVertex(455,1193,478,1181,507,1180);
+  bezierVertex(540,1200,574,1204,611,1204);
+  bezierVertex(684,1204,756,1210,824,1177);
+  bezierVertex(892,1142,938,1044,958,936);
+  bezierVertex(978,834,994,726,982,624);
+  bezierVertex(972,546,966,500,972,485);
   endShape();
 }
 
@@ -840,8 +863,8 @@ function starIsHot(starIndex) {
 
 function moonAnchor() {
   if (moonState === "ride") {
-    const c = seatCenter();
-    return { x: c.x, y: c.y - 53 * c.scale };
+    const c = drawnSwingGeometry();
+    return { x: c.center.x, y: c.center.y - 53 * c.scale };
   }
   return { x: moon.x, y: moon.y };
 }
@@ -908,7 +931,10 @@ function syncSkyControls() {
       link.hidden = true;
       continue;
     }
-    const pendant = strand.nodes[strand.nodes.length - 1];
+    const pendant = {
+      x: strand.drawX != null ? strand.drawX : strand.nodes[strand.nodes.length - 1].x,
+      y: strand.drawY != null ? strand.drawY : strand.nodes[strand.nodes.length - 1].y
+    };
     const gap = strandGap(WORK_STAR_SLOTS[i]);
     // As wide as the gap allows, and tall enough to tap. The next star stays outside
     // on a mouse. A finger needs a larger target, so touch uses at least 44px.
@@ -926,7 +952,8 @@ function syncSkyControls() {
   if (!moonLink) return;
   const anchored = moonAnchor();
   // The moon is larger than a pendant star and sits clear of the strings.
-  placeHit(moonLink, anchored.x, anchored.y, ox, oy, sx, sy, 118, 118);
+  // Cover the moon, and leave the lower seat free so it can still be dragged.
+  placeHit(moonLink, anchored.x, anchored.y, ox, oy, sx, sy, 100, 100);
   moonLink.style.zIndex = "2";
 }
 
