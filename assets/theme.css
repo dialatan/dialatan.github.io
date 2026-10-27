@@ -1,0 +1,70 @@
+/* Shared world: cream paper by day, navy by night, one gold accent.
+   Homepage and /starmap/ both load this file. */
+
+:root {
+  --paper: #f6f3ec;
+  --night: #0c1124;
+  --gold: #dcb34c;
+  --ink: #1c1b19;
+  --serif: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", Arial, sans-serif;
+}
+
+/* Nightfall / dawn overlay. JS adds .is-active, then .is-night or .is-paper. */
+.nightfall {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: transparent;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.nightfall canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.nightfall.is-active {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.nightfall.is-night {
+  background: var(--night);
+  transition: background-color 1.05s ease;
+}
+
+.nightfall.is-night canvas {
+  opacity: 1;
+  transition: opacity 0.95s ease 0.12s;
+}
+
+.nightfall.is-dawn {
+  background: var(--night);
+}
+
+.nightfall.is-dawn canvas {
+  opacity: 1;
+}
+
+.nightfall.is-dawn.is-paper {
+  background: var(--paper);
+  transition: background-color 1.05s ease;
+}
+
+.nightfall.is-dawn.is-paper canvas {
+  opacity: 0;
+  transition: opacity 0.85s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nightfall,
+  .nightfall canvas {
+    transition: none !important;
+  }
+}

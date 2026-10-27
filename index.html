@@ -4,9 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>小枝的世界 · dialatan</title>
+    <meta name="theme-color" content="#f6f3ec" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="favicon.ico" sizes="32x32" />
+    <link rel="stylesheet" href="assets/theme.css" />
+    <link rel="stylesheet" type="text/css" href="style.css?v=4" />
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/p5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.11.13/lib/addons/p5.sound.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css?v=3">
   </head>
   <body>
     <div class="hero">
@@ -15,6 +19,9 @@
         <p class="site-label">WELCOME TO MY LITTLE WORLD</p>
 
         <h1>欢迎来到<br>小枝的世界</h1>
+
+        <p class="name-line">小枝 · Dialatan</p>
+        <p class="en-intro" lang="en">Xiaozhi · learning UE, Blender and AI-assisted coding, and turning ideas into small things you can click.</p>
 
         <p class="site-description">
           这里收集画画，互动实验，AI创作<br>
@@ -33,13 +40,43 @@
       <p class="site-label">WORKS</p>
       <h2 id="works-title">作品 / Works</h2>
       <div class="works-grid">
-        <a class="work-card" href="/starmap/">
+        <a class="work-card" href="/starmap/" data-nightfall>
+          <span class="work-cover">
+            <img src="assets/covers/starmap.webp" alt="" width="960" height="600" />
+          </span>
+          <ul class="work-tags">
+            <li>Codex</li>
+            <li>JavaScript</li>
+            <li>2026</li>
+            <li>中/EN</li>
+            <li class="is-ai">AI-assisted</li>
+          </ul>
           <h3>思想星图 <span lang="en">/ Thinking Star Map</span></h3>
-          <p>用 AI 辅助整理四位中文写作者反复出现的想法，画成一片可以点开的星空。 <span lang="en">/ Recurring ideas of four Chinese writers, mapped as an interactive night sky with AI-assisted research.</span></p>
+          <p>用 AI 辅助整理四位中文写作者反复出现的想法，画成一片可以点开的星空。 <span lang="en">Recurring ideas of four Chinese writers, mapped as an interactive night sky with AI-assisted research.</span></p>
+        </a>
+
+        <a class="work-card" href="/perfection-balance_illustration/">
+          <span class="work-cover">
+            <img src="assets/covers/perfection.webp" alt="" width="960" height="600" />
+          </span>
+          <ul class="work-tags">
+            <li>Codex</li>
+            <li>HTML</li>
+            <li>2026</li>
+            <li>中文</li>
+            <li class="is-ai">AI-assisted</li>
+          </ul>
+          <h3>不是每件事，都值得 100 分</h3>
+          <p>关于选择性完美、行动连续性与心理效能的图文长页。用 Codex 制作，插画由 AI 生成。 <span lang="en">An illustrated page on selective perfection. Built with Codex · illustrations AI-generated.</span></p>
         </a>
       </div>
     </section>
 
+    <div class="nightfall" id="nightfall" aria-hidden="true">
+      <canvas id="nightfall-stars"></canvas>
+    </div>
+
     <script src="sketch.js"></script>
+    <script src="assets/transition.js"></script>
   </body>
 </html>

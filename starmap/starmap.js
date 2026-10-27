@@ -2,7 +2,7 @@
    Content lives in data.js (UI, WRITERS, QUESTIONS). */
 
 const GOLD = [220, 179, 76];
-const PAPER = [244, 239, 228];
+const PAPER = [246, 243, 236];
 
 const state = {
   lang: "zh",
@@ -71,7 +71,7 @@ function setup() {
   c.parent("sky");
   pixelDensity(Math.min(2, displayDensity()));
   frameRate(45);
-  textFont('"PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", Arial, sans-serif');
+  textFont('"Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "SimSun", serif');
   makeBackgroundStars();
   bindPointer(c.elt);
   initLang();
