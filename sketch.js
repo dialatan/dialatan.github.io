@@ -887,7 +887,9 @@ function buildSkyLinks() {
   workLinks = [];
   hotWork = -1;
   hotMoon = false;
-  const works = (typeof WORKS !== "undefined" && Array.isArray(WORKS)) ? WORKS : [];
+  const works = (typeof WORKS !== "undefined" && Array.isArray(WORKS))
+    ? WORKS.filter(function (work) { return work.sky; })
+    : [];
   for (let i = 0; i < works.length && i < WORK_STAR_SLOTS.length; i++) {
     const work = works[i];
     const tip = work.title_zh + " / " + work.title_en;

@@ -1,0 +1,210 @@
+/* The drawings gallery. */
+
+html,
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--sans);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.art-page {
+  width: min(1080px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 72px) 0 80px;
+}
+
+.back {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: color-mix(in srgb, var(--ink) 70%, var(--gold));
+}
+
+.kicker {
+  margin: 28px 0 12px;
+  color: color-mix(in srgb, var(--ink) 55%, var(--paper));
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+.kicker::before {
+  content: "";
+  display: inline-block;
+  width: 0.45em;
+  height: 0.45em;
+  margin-right: 0.6em;
+  background: var(--gold);
+  border-radius: 50%;
+  transform: translateY(-0.05em);
+}
+
+h1 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: clamp(32px, 4.4vw, 52px);
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+h1 span {
+  color: color-mix(in srgb, var(--ink) 55%, var(--paper));
+  font-weight: 400;
+}
+
+.note-title {
+  margin: 12px 0 0;
+  color: color-mix(in srgb, var(--ink) 62%, var(--paper));
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ai-flag {
+  display: inline-block;
+  margin: 18px 0 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--night);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+}
+
+.blurb {
+  max-width: 40em;
+  margin: 16px 0 0;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.blurb span[lang="en"] {
+  color: color-mix(in srgb, var(--ink) 62%, var(--paper));
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 18px;
+  margin: 36px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ink) 5%, var(--paper));
+}
+
+.more {
+  margin-top: 56px;
+  padding-top: 22px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 18%, var(--paper));
+}
+
+.more p {
+  margin: 0 0 12px;
+  color: color-mix(in srgb, var(--ink) 55%, var(--paper));
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+.more ul,
+.series-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.series-list a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.series-list img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 14px;
+  background: var(--night);
+}
+
+.series-list h2 {
+  margin: 12px 0 0;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.series-list h2 span {
+  color: color-mix(in srgb, var(--ink) 55%, var(--paper));
+  font-weight: 400;
+}
+
+.series-list a:hover h2,
+.series-list a:focus-visible h2 {
+  color: color-mix(in srgb, var(--ink) 75%, var(--gold));
+}
+
+.more a {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.more ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+}
+
+.more a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 680px) {
+  .art-page {
+    width: min(100% - 32px, 1080px);
+    padding-top: 24px;
+  }
+
+  .gallery {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}

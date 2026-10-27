@@ -411,6 +411,10 @@ body {
   object-fit: cover;
 }
 
+.work-cover.is-tall img {
+  object-position: center top;
+}
+
 .work-tags {
   display: flex;
   flex-wrap: wrap;
