@@ -1051,31 +1051,79 @@ function playChime(strandIndex, strength) {
 }
 
 function mousePressed() {
-  if (!soundReady) {
-    userStartAudio();
-    soundReady = true;
-  }
+  unlockSound();
 
   if (moonState !== "ride") return false;
-  const c = seatCenter();
-  const hitRadiusX = 145 * c.scale;
-  const hitRadiusY = 95 * c.scale;
-  const nx = (mouseX - c.x) / hitRadiusX;
-  const ny = (mouseY - (c.y - 25 * c.scale)) / hitRadiusY;
-
-  if (nx * nx + ny * ny <= 1) {
-    draggingSwing = true;
-    dragStartY = mouseY;
-    dragStartAngle = swing.angle;
-    previousDragAngle = swing.angle;
-    dragAngularVelocity = 0;
-    swing.velocity = 0;
-  }
+  if (pointerOnSwing()) beginSwingDrag();
   return false;
 }
 
 function mouseDragged() {
   if (!draggingSwing) return false;
+  applySwingDrag();
+  return false;
+}
+
+function mouseReleased() {
+  if (!draggingSwing) return false;
+  endSwingDrag();
+  return false;
+}
+
+// p5 listens for touches on the window. Returning false calls preventDefault
+// and stops the page from scrolling, so only a real swing grab should do that.
+// Any other swipe — including one that starts on the drawing — must scroll.
+function touchStarted(event) {
+  unlockSound();
+  if (!touchClaimsSwing(event)) return true;
+  beginSwingDrag();
+  return false;
+}
+
+function touchMoved() {
+  if (!draggingSwing) return true;
+  applySwingDrag();
+  return false;
+}
+
+function touchEnded() {
+  if (!draggingSwing) return true;
+  endSwingDrag();
+  return false;
+}
+
+function unlockSound() {
+  if (soundReady) return;
+  userStartAudio();
+  soundReady = true;
+}
+
+function pointerOnSwing() {
+  const c = seatCenter();
+  const hitRadiusX = 145 * c.scale;
+  const hitRadiusY = 95 * c.scale;
+  const nx = (mouseX - c.x) / hitRadiusX;
+  const ny = (mouseY - (c.y - 25 * c.scale)) / hitRadiusY;
+  return nx * nx + ny * ny <= 1;
+}
+
+function touchClaimsSwing(event) {
+  if (moonState !== "ride") return false;
+  const canvas = document.querySelector("#canvas-container canvas");
+  if (!canvas || !event || event.target !== canvas) return false;
+  return pointerOnSwing();
+}
+
+function beginSwingDrag() {
+  draggingSwing = true;
+  dragStartY = mouseY;
+  dragStartAngle = swing.angle;
+  previousDragAngle = swing.angle;
+  dragAngularVelocity = 0;
+  swing.velocity = 0;
+}
+
+function applySwingDrag() {
   // Up = farther/smaller; down = nearer/larger.
   const target = constrain(
     dragStartAngle + (dragStartY - mouseY) * 0.0042,
@@ -1087,14 +1135,11 @@ function mouseDragged() {
   const instantVelocity = (swing.angle - previousDragAngle) / frameDt;
   dragAngularVelocity = lerp(dragAngularVelocity, instantVelocity, 0.28);
   previousDragAngle = swing.angle;
-  return false;
 }
 
-function mouseReleased() {
-  if (!draggingSwing) return false;
+function endSwingDrag() {
   draggingSwing = false;
   swing.velocity = constrain(dragAngularVelocity, -2.0, 2.0);
-  return false;
 }
 
 function keyPressed() {
