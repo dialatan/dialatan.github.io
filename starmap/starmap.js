@@ -10,7 +10,8 @@ const state = {
   hover: null,     // { w, s }
   pinned: null,    // { w, s }
   pulse: null,     // { w, s, t0 }
-  touch: false
+  touch: false,
+  ask: null        // { status, id? } from matchTopic
 };
 
 let bgStars = [];
@@ -54,8 +55,11 @@ function applyLang() {
   document.getElementById("sky").setAttribute("aria-label", t("title"));
   document.querySelectorAll(".card-close").forEach((b) => b.setAttribute("aria-label", t("close")));
   document.getElementById("hint").textContent = state.touch ? t("hintTouch") : t("hint");
+  const askInput = document.getElementById("qa-input");
+  if (askInput) askInput.placeholder = t("askPlaceholder");
   renderAbout();
   renderQA();
+  renderAsk();
   if (state.pinned) fillCard(state.pinned);
   else if (state.hover) fillCard(state.hover);
 }
@@ -479,65 +483,145 @@ function renderAbout() {
   });
 }
 
+function buildAnswerCard(writer, answer) {
+  const hasStar = Boolean(answer.star);
+  const cardEl = document.createElement(hasStar ? "button" : "div");
+  if (hasStar) cardEl.type = "button";
+  cardEl.className = "qa-card" + (hasStar ? "" : " no-star");
+  cardEl.style.setProperty("--accent", `rgb(${writer.color.join(",")})`);
+
+  const name = document.createElement("span");
+  name.className = "qa-name";
+  name.textContent = writer.name[state.lang];
+  cardEl.appendChild(name);
+
+  const p = document.createElement("p");
+  p.className = "qa-text";
+  if (answer.coverage === "inferred") {
+    cardEl.classList.add("inferred");
+    const pre = document.createElement("em");
+    pre.className = "qa-infer";
+    pre.textContent = inferLabel(writer);
+    p.append(pre, answer[state.lang]);
+  } else {
+    p.textContent = answer[state.lang];
+  }
+  cardEl.appendChild(p);
+
+  if (hasStar) {
+    const star = writer.stars.find((s) => s.id === answer.star);
+    const starName = star ? star.name[state.lang] : "";
+    const link = document.createElement("span");
+    link.className = "qa-link";
+    link.textContent = state.lang === "en"
+      ? `✦ ${t("viewStar")}: ${starName}`
+      : `✦ ${t("viewStar")}：${starName}`;
+    cardEl.appendChild(link);
+    cardEl.addEventListener("click", () => highlightStar(writer.id, answer.star));
+  }
+  return cardEl;
+}
+
+function appendAnswerGrid(parent, question) {
+  const grid = document.createElement("div");
+  grid.className = "qa-grid";
+  WRITERS.forEach((writer) => {
+    const answer = question.answers[writer.id];
+    if (!answer) return;
+    grid.appendChild(buildAnswerCard(writer, answer));
+  });
+  parent.appendChild(grid);
+}
+
+function buildSuggestions() {
+  const wrap = document.createElement("div");
+  wrap.className = "qa-suggests";
+  QUESTIONS.forEach((question, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "qa-suggest";
+    button.textContent = `Q${index + 1}  ${question.q[state.lang]}`;
+    button.addEventListener("click", () => {
+      const input = document.getElementById("qa-input");
+      input.value = question.q[state.lang];
+      submitAsk(question.q[state.lang]);
+    });
+    wrap.appendChild(button);
+  });
+  return wrap;
+}
+
 function renderQA() {
   document.getElementById("qa-intro").textContent = t("qaIntro");
   const list = document.getElementById("qa-list");
   list.replaceChildren();
 
-  QUESTIONS.forEach((q, qi) => {
+  QUESTIONS.forEach((question, index) => {
     const block = document.createElement("section");
     block.className = "qa-block";
     const h = document.createElement("h2");
     const num = document.createElement("span");
-    num.textContent = `Q${qi + 1}`;
-    h.append(num, q.q[state.lang]);
+    num.textContent = `Q${index + 1}`;
+    h.append(num, question.q[state.lang]);
     block.appendChild(h);
-
-    const grid = document.createElement("div");
-    grid.className = "qa-grid";
-
-    WRITERS.forEach((w) => {
-      const a = q.answers[w.id];
-      if (!a) return;
-      const hasStar = Boolean(a.star);
-      const cardEl = document.createElement(hasStar ? "button" : "div");
-      if (hasStar) cardEl.type = "button";
-      cardEl.className = "qa-card" + (hasStar ? "" : " no-star");
-      cardEl.style.setProperty("--accent", `rgb(${w.color.join(",")})`);
-
-      const name = document.createElement("span");
-      name.className = "qa-name";
-      name.textContent = w.name[state.lang];
-      cardEl.appendChild(name);
-
-      const p = document.createElement("p");
-      p.className = "qa-text";
-      if (a.coverage === "inferred") {
-        cardEl.classList.add("inferred");
-        const pre = document.createElement("em");
-        pre.className = "qa-infer";
-        pre.textContent = inferLabel(w);
-        p.append(pre, a[state.lang]);
-      } else {
-        p.textContent = a[state.lang];
-      }
-      cardEl.appendChild(p);
-
-      if (hasStar) {
-        const star = w.stars.find((s) => s.id === a.star);
-        const link = document.createElement("span");
-        link.className = "qa-link";
-        link.textContent = `✦ ${t("viewStar")}：${star ? star.name[state.lang] : ""}`;
-        if (state.lang === "en") link.textContent = `✦ ${t("viewStar")}: ${star ? star.name.en : ""}`;
-        cardEl.appendChild(link);
-        cardEl.addEventListener("click", () => highlightStar(w.id, a.star));
-      }
-      grid.appendChild(cardEl);
-    });
-
-    block.appendChild(grid);
+    appendAnswerGrid(block, question);
     list.appendChild(block);
   });
+}
+
+function renderAsk() {
+  const box = document.getElementById("qa-result");
+  if (!box) return;
+  box.replaceChildren();
+  const ask = state.ask;
+  if (!ask) return;
+
+  if (ask.status === "empty" || ask.status === "short") {
+    const note = document.createElement("p");
+    note.className = "qa-note";
+    note.textContent = t(ask.status === "empty" ? "askEmpty" : "askShort");
+    box.appendChild(note);
+    if (ask.status === "short") box.appendChild(buildSuggestions());
+    return;
+  }
+
+  if (ask.status === "none") {
+    const note = document.createElement("p");
+    note.className = "qa-note";
+    note.textContent = t("askNone");
+    box.appendChild(note);
+    box.appendChild(buildSuggestions());
+    return;
+  }
+
+  const topic = QUESTIONS.find((question) => question.id === ask.id);
+  if (!topic) return;
+  const label = document.createElement("p");
+  label.className = "qa-match";
+  const kicker = document.createElement("span");
+  kicker.className = "qa-match-kicker";
+  kicker.textContent = t("askMatched");
+  const name = document.createElement("span");
+  name.className = "qa-match-name";
+  name.textContent = topic.q[state.lang];
+  label.append(kicker, name);
+  box.appendChild(label);
+
+  const sub = document.createElement("p");
+  sub.className = "qa-match-sub";
+  sub.lang = state.lang === "zh" ? "en" : "zh-CN";
+  sub.textContent = topic.q[other()];
+  box.appendChild(sub);
+  appendAnswerGrid(box, topic);
+}
+
+function submitAsk(raw) {
+  state.ask = matchTopic(raw);
+  renderAsk();
+  const box = document.getElementById("qa-result");
+  const scroller = document.getElementById("qa-view");
+  if (!box || !box.firstChild || !scroller) return;
+  scroller.scrollTo({ top: Math.max(0, box.offsetTop - 8), behavior: reduceMotion ? "auto" : "smooth" });
 }
 
 function bindUI() {
@@ -549,6 +633,13 @@ function bindUI() {
   });
   document.getElementById("tab-map").addEventListener("click", () => setView("map"));
   document.getElementById("tab-qa").addEventListener("click", () => setView("qa"));
+  const askForm = document.getElementById("qa-ask");
+  if (askForm) {
+    askForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      submitAsk(document.getElementById("qa-input").value);
+    });
+  }
   document.getElementById("card-close").addEventListener("click", closeCard);
 
   const about = document.getElementById("about");

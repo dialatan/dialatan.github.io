@@ -26,6 +26,15 @@ const UI = {
     viewStar: "在星图中查看",
     inferPrefix: "他可能会这么回答：",
     qaIntro: "同一个问题，放进四份报告里会得到什么回答？以下概括依据报告内容；有些问题作者没有直接谈过，就根据其整体思路推测「他可能会这么回答」或「TA 可能会这么回答」。点击卡片可以回到星图中对应的星星。",
+    askLabel: "你的问题",
+    askPlaceholder: "例如：我总是拖延怎么办",
+    askSubmit: "看四种答案",
+    askHint: "输入你的问题，按回车。这里不会新写回答，只在报告里已有的五个话题中做匹配。",
+    askMatched: "最接近的话题：",
+    askNone: "没有足够接近的话题。下面是报告里已经回答过的问题，点一个看看。",
+    askEmpty: "先写下一个问题。",
+    askShort: "再多写几个字，才好对上已有的话题。",
+    askArchive: "报告里已有的问题",
     report: "报告",
     aboutTitle: "关于这个项目",
     aboutBody: [
@@ -56,6 +65,15 @@ const UI = {
     viewStar: "Show on the star map",
     inferPrefix: "He might answer: ",
     qaIntro: "What happens when you ask the four reports the same question? The summaries below are based on each report; where a writer never addressed a question directly, the card offers an inference from their overall thinking, marked “He might answer” or “They might answer”. Click a card to jump to the matching star.",
+    askLabel: "Your question",
+    askPlaceholder: "e.g. how do I deal with uncertainty",
+    askSubmit: "See four answers",
+    askHint: "Type a question and press Enter. This does not write a new answer. It only matches your words to one of the five topics already in the reports.",
+    askMatched: "Closest topic: ",
+    askNone: "Nothing here is close enough. These are the questions the reports already answer — pick one.",
+    askEmpty: "Write a question first.",
+    askShort: "Add a few more words so it can match an existing topic.",
+    askArchive: "Questions already in the reports",
     report: "Report",
     aboutTitle: "About this project",
     aboutBody: [
@@ -582,3 +600,30 @@ const QUESTIONS = [
     }
   }
 ];
+
+/*
+ * Hand-written keywords for the ask box. They only choose which existing
+ * QUESTIONS topic to show. They are not new answers.
+ */
+const TOPIC_KEYWORDS = {
+  uncertainty: {
+    zh: ["不确定", "不确定性", "未知", "没把握", "看不清", "无法预测", "难以预测", "心里没底", "心慌", "不安", "动荡", "风险", "恐惧", "害怕"],
+    en: ["uncertainty", "uncertain", "unsure", "unknown", "unpredictable", "forecast", "afraid", "fear"]
+  },
+  stuck: {
+    zh: ["拖延", "拖延症", "停滞", "卡住", "动不了", "没动力", "提不起劲", "摆烂", "完美主义", "内耗", "自责", "开始不了", "磨蹭", "懒得"],
+    en: ["procrastinat", "procrastination", "stuck", "stalling", "unmotivated", "perfectionism", "lazy"]
+  },
+  grow: {
+    zh: ["变得更好", "变好", "成长", "进步", "提升自己", "自我提升", "变强", "改进", "怎么成长", "如何成长"],
+    en: ["growth", "growing", "improve", "improvement", "self-improvement", "better myself"]
+  },
+  judgment: {
+    zh: ["判断", "决策", "决定", "做决定", "抉择", "怎么选", "该不该", "值不值得", "辞职", "离职", "跳槽", "裸辞", "换工作"],
+    en: ["judgment", "judgement", "decide", "decision", "deciding", "choice", "choose", "choosing", "quit", "resign", "resignation"]
+  },
+  relationships: {
+    zh: ["关系", "恋爱", "爱情", "分手", "复合", "婚姻", "结婚", "离婚", "伴侣", "男朋友", "女朋友", "吵架", "冷战", "朋友", "友情", "相处", "边界感"],
+    en: ["relationship", "relationships", "partner", "marriage", "boyfriend", "girlfriend", "breakup", "friendship", "argument", "love"]
+  }
+};

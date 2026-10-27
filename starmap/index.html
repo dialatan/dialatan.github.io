@@ -50,7 +50,19 @@
     <!-- One question, four answers -->
     <section id="qa-view" class="qa-view" hidden aria-labelledby="tab-qa">
       <p class="qa-intro" id="qa-intro"></p>
-      <div id="qa-list"></div>
+      <form id="qa-ask" class="qa-ask">
+        <label class="qa-ask-label" id="qa-ask-label" for="qa-input" data-i18n="askLabel"></label>
+        <p class="qa-ask-hint" id="qa-ask-hint" data-i18n="askHint"></p>
+        <div class="qa-ask-row">
+          <input id="qa-input" type="text" autocomplete="off" enterkeyhint="search" maxlength="200" aria-describedby="qa-ask-hint" />
+          <button type="submit" id="qa-submit" data-i18n="askSubmit"></button>
+        </div>
+      </form>
+      <div id="qa-result" class="qa-result" aria-live="polite"></div>
+      <div class="qa-archive">
+        <p class="qa-archive-label" data-i18n="askArchive"></p>
+        <div id="qa-list"></div>
+      </div>
     </section>
 
     <!-- About panel -->
@@ -71,6 +83,7 @@
     </div>
 
     <script src="data.js"></script>
+    <script src="ask.js"></script>
     <script src="starmap.js"></script>
     <script src="../assets/transition.js"></script>
   </body>
